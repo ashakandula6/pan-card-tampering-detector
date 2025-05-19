@@ -98,9 +98,5 @@ You can deploy this app on:
 
 ---
 
-## 📜 License
-
-This project is licensed under the [MIT License](LICENSE).
-
-```
-
+![image](https://github.com/user-attachments/assets/cb5374cb-f0a1-42d3-8c4c-5868a75d0321)
+Link for website: https://pan-card-tampering-detector-1.onrender.com/
