@@ -1,8 +1,4 @@
-**✅ Here is your updated complete README.md** — I have **merged** your previous README with all the new improvements we made (Docker, CI/CD, AWS, `/predict` API, etc.):
-
----
-
-```markdown
+````markdown
 # 🛡️ PAN Card Tampering Detection Web App
 
 A production-ready Flask web application that detects tampering in uploaded PAN Card images using Structural Similarity Index (SSIM) and OpenCV.
@@ -17,6 +13,8 @@ A production-ready Flask web application that detects tampering in uploaded PAN 
 - Dockerized for consistent deployment
 - Automated CI/CD pipeline with GitHub Actions
 - Deployed on AWS EC2
+
+---
 
 ## 📁 Project Structure
 
@@ -44,29 +42,39 @@ pan-card-tampering-detector/
 ```bash
 # 1. Clone the repository
 git clone https://github.com/ashakandula6/pan-card-tampering-detector.git
+
+# 2. Move into project folder
 cd pan-card-tampering-detector
 
-# 2. Build and run
+# 3. Build Docker image
 docker build -t pan-card-api .
+
+# 4. Run Docker container
 docker run -p 5000:5000 pan-card-api
 ```
 
-Open: **`http://localhost:5000`**
+Open in browser:
+
+```bash
+http://localhost:5000
+```
 
 ---
 
 ## 🔌 API Endpoint
 
-**POST** `/predict`
+### POST `/predict`
 
-**Request:**
+### Request
+
 ```json
 {
   "image": "base64_encoded_image_string"
 }
 ```
 
-**Response:**
+### Response
+
 ```json
 {
   "tampered": false,
@@ -80,8 +88,10 @@ Open: **`http://localhost:5000`**
 
 ## 🌐 Live Deployments
 
-- **Render (Current)**: [https://pan-card-tampering-detector-1.onrender.com/](https://pan-card-tampering-detector-1.onrender.com/)
-- **AWS EC2** (New Production Deployment): `http://your-ec2-ip:5000` *(Coming soon)*
+- **Render (Current)**: https://pan-card-tampering-detector-1.onrender.com/
+- **AWS EC2 (Production Deployment)**: `http://your-ec2-ip:5000` *(Coming soon)*
+
+---
 
 ## 🧠 Tech Stack
 
@@ -94,12 +104,14 @@ Open: **`http://localhost:5000`**
 
 ---
 
-## Deployment
+## 🚀 Deployment
 
 - **CI/CD Pipeline**: Fully automated (GitHub → ECR → EC2)
 - **Status**: ✅ Dockerized + CI/CD Ready
 
-## Future Enhancements
+---
+
+## 🔮 Future Enhancements
 
 - Integrate Deep Learning (CNN) model
 - Add user authentication
@@ -111,7 +123,7 @@ Open: **`http://localhost:5000`**
 ## 🙋‍♀️ Author
 
 **Asha Kandula**  
-🔗 GitHub: [@ashakandula6](https://github.com/ashakandula6)
+
+GitHub: https://github.com/ashakandula6
 
 ---
-
