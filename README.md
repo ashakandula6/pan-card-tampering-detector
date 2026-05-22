@@ -2,8 +2,6 @@
 
 A production-ready Flask web application that detects tampering in uploaded PAN Card images using Structural Similarity Index (SSIM) and OpenCV.
 
-![Project Architecture](architecture.png)
-
 ---
 
 ## 🚀 Features
