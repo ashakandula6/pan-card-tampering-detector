@@ -1,69 +1,55 @@
-name: Build & Deploy to AWS EC2
+name: Deploy to EC2
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPO_NAME: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG $ECR_REGISTRY/$REPO_NAME:latest
-          docker push $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$REPO_NAME:latest
+    - name: Build, tag, and push image to ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: pan-card-tampering-detector
+        IMAGE_TAG: latest
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY
-          # ↑ explicitly pass these into the SSH environment
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-            # Login to ECR from EC2
-            aws ecr get-login-password --region $AWS_REGION \
-              | docker login --username AWS --password-stdin $ECR_REGISTRY
-
-            # Pull latest image
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-            # Stop & remove old container
-            docker stop pan-card-api || true
-            docker rm pan-card-api || true
-
-            # Run new container
-            docker run -d \
-              --name pan-card-api \
-              --restart unless-stopped \
-              -p 5000:5000 \
-              $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-            echo "🚀 Deployment successful!"
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            docker login --username AWS --password-stdin \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          
+          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pan-card-tampering-detector:latest
+          
+          docker stop pan-card-app || true
+          docker rm pan-card-app || true
+          
+          docker run -d \
+            --name pan-card-app \
+            -p 5000:5000 \
+            --restart always \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/pan-card-tampering-detector:latest
